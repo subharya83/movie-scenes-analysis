@@ -19,6 +19,10 @@ youtube-dl -i --dateafter 20180701 --get-id https://www.youtube.com/user/Moviecl
 for i in `ls videos/*.mp4`; do 
   ID=`basename $i|sed -e 's/YTID_//g' -e s/\.mp4//g`;
   nframes=`ffmpeg -i $i -map 0:v:0 -c copy -f null - 2>&1|grep "frame="|cut -d' ' -f2`;
+  if [ -z $nframes ];
+    nframes=`ffmpeg -i $i -vcodec copy -f rawvideo -y /dev/null 2>&1|tr ^M '\n'|awk '/^frame=/ {print $2}'|tail -n 1`
+  fi 
+  
   res=`ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 $i`; 
   echo "$ID",$nframes,$res; 
   done > >(tee moviescenes-metadata.csv)
