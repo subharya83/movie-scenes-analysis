@@ -25,13 +25,26 @@ for i in `ls videos/*.mp4`; do
   
   res=`ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 $i`; 
   echo "$ID",$nframes,$res; 
-  done > >(tee moviescenes-metadata.csv)
+done > >(tee moviescenes-metadata.csv)
 ```
-#### Getting title 
+#### Getting YouTube video title 
 ```
 for i in `ls stats/*.json`; do 
   id=`basename $i|sed -e 's/\.json//g' -e 's/TTD_//g'`; 
   ttl=`jq .Title $i`; 
   echo $id,$ttl; 
-  done > >(tee moviescenes-titles.csv) 
+done > >(tee moviescenes-titles.csv) 
 ```
+
+### Extracting Year of Movie from YouTube video title string
+```
+f=metadata/titles.tsv;
+nlines=`cat $f|wc -l`; 
+for i in `seq 1 $nlines`; do 
+  ln=`awk "NR==$i" $f`; 
+  year=`echo $ln|sed -n 's/.*\([1-9][0-9][0-9][0-9]\).*/\1/p'`; 
+  echo $year;  
+done > >(tee metadata/titles-years.csv)
+```
+
+
