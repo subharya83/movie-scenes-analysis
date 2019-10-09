@@ -12,14 +12,20 @@ youtube-dl -i --dateafter 20180701 --get-id https://www.youtube.com/user/Moviecl
 ### Dataset metadata generation
 #### Getting statistics viewcount, likecount, dislikecount, comments
 ```
-
+for id in `cut -c1-11  metadata/moviescenes-metadata-Titles.tsv`; do 
+  x=`grep -e "$id" metadata/moviescenes-metadata-Statistics.tsv|sed 's/\t/,/g'`; 
+  if [ -z "$x" ]; then 
+    x="$id,,,"; 
+  fi; 
+  echo $x;
+done > >(tee rel-Titles-statistics.csv
 ```
 #### Getting Number of frames, resolution 
 ```
 for i in `ls videos/*.mp4`; do 
   ID=`basename $i|sed -e 's/YTID_//g' -e s/\.mp4//g`;
   nframes=`ffmpeg -i $i -map 0:v:0 -c copy -f null - 2>&1|grep "frame="|cut -d' ' -f2`;
-  if [ -z $nframes ];
+  if [ -z $nframes ]; then
     nframes=`ffmpeg -i $i -vcodec copy -f rawvideo -y /dev/null 2>&1|tr ^M '\n'|awk '/^frame=/ {print $2}'|tail -n 1`
   fi 
   
