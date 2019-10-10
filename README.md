@@ -53,4 +53,18 @@ for i in `seq 1 $nlines`; do
 done > >(tee metadata/titles-years.csv)
 ```
 
-
+### Extracting IMDBid of Movie using Title, also obtain movie genre
+```
+lasttitle="";
+MDFILE=metadata/moviescenes-metadata.json;
+for item in `seq 1 22450`; do  
+  id=`jq .[$item].YouTubeID $MDFILE`;
+  mt=`jq .[$item].IMDBTitle $MDFILE`; 
+  if [[ $mt != $lasttitle ]]; then 
+    imdbid=`imdbpy search movie -n 1 "$mt"|tail -1|cut -d' ' -f4`; 
+    g=`imdbpy get movie $imdbid|grep -i "genre"|sed 's/Genres://g'`;
+  fi; 
+  echo $id,$imdbid,$mt,\"$g\"; 
+  lasttitle=$mt; 
+done > >(tee metadata/YouTubeID-IMDBID-genre.csv)
+```
